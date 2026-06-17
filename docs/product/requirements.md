@@ -325,6 +325,14 @@ Features to consider after MVP validation:
 ## References
 
 - [Product Vision](vision.md)
+- [Product Principles](principles.md)
+- [User Stories](user-stories.md)
+- [Acceptance Criteria](acceptance-criteria.md)
+- [Engineering Glossary](glossary.md)
 - [MVP v1 Specification](mvp/MVP-v1.md)
 - [Architecture Decision Records](../adr/)
 - [System Architecture](../architecture/system-overview.md)
+- [Domain Model](../architecture/domain-model.md)
+- [Data Model](../architecture/data-model.md)
+- [API Documentation](../api/README.md)
+- [AI Prompt Specification](../ai/report-generation.md)
