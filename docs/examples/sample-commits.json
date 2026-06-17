@@ -1,0 +1,122 @@
+[
+  {
+    "sha": "abc123def456",
+    "repository": "customer-portal",
+    "author_name": "John Doe",
+    "author_email": "john@example.com",
+    "timestamp": "2024-01-15T14:30:00Z",
+    "title": "feat(auth): add OAuth2 support for Google and GitHub",
+    "description": "Implemented OAuth2 authentication flow with support for Google and GitHub providers.\n\n- Added OAuth2 client configuration\n- Implemented callback handlers\n- Added user profile mapping\n- Updated login UI with provider buttons\n\nThis enables users to sign in using their existing Google or GitHub accounts, improving the onboarding experience.",
+    "files_changed": 8,
+    "insertions": 245,
+    "deletions": 67
+  },
+  {
+    "sha": "def456ghi789",
+    "repository": "customer-portal",
+    "author_name": "John Doe",
+    "author_email": "john@example.com",
+    "timestamp": "2024-01-15T15:45:00Z",
+    "title": "fix(auth): improve session handling and token refresh",
+    "description": "Fixed issues with session expiration and implemented automatic token refresh.\n\n- Added token refresh logic\n- Improved session storage\n- Fixed race condition in auth middleware\n- Added better error messages",
+    "files_changed": 4,
+    "insertions": 89,
+    "deletions": 34
+  },
+  {
+    "sha": "ghi789jkl012",
+    "repository": "api-gateway",
+    "author_name": "Jane Smith",
+    "author_email": "jane@example.com",
+    "timestamp": "2024-01-15T10:15:00Z",
+    "title": "perf(api): optimize database queries and add caching",
+    "description": "Improved API performance by optimizing database queries and implementing Redis caching.\n\n- Added query result caching\n- Optimized N+1 queries\n- Implemented connection pooling\n- Added cache invalidation logic\n\nAPI response times reduced by 60% on average.",
+    "files_changed": 6,
+    "insertions": 178,
+    "deletions": 45
+  },
+  {
+    "sha": "jkl012mno345",
+    "repository": "api-gateway",
+    "author_name": "Jane Smith",
+    "author_email": "jane@example.com",
+    "timestamp": "2024-01-15T13:20:00Z",
+    "title": "feat(monitoring): add comprehensive error logging",
+    "description": "Implemented structured logging and error tracking throughout the API.\n\n- Added structured JSON logging\n- Integrated with error tracking service\n- Added request/response logging\n- Implemented log aggregation",
+    "files_changed": 5,
+    "insertions": 134,
+    "deletions": 23
+  },
+  {
+    "sha": "mno345pqr678",
+    "repository": "admin-dashboard",
+    "author_name": "Bob Johnson",
+    "author_email": "bob@example.com",
+    "timestamp": "2024-01-15T11:30:00Z",
+    "title": "fix(ui): resolve data table sorting issues",
+    "description": "Fixed bugs in data table sorting functionality.\n\n- Fixed column sort direction\n- Resolved date sorting issues\n- Added sort indicators\n- Improved sort performance",
+    "files_changed": 3,
+    "insertions": 67,
+    "deletions": 28
+  },
+  {
+    "sha": "pqr678stu901",
+    "repository": "admin-dashboard",
+    "author_name": "Bob Johnson",
+    "author_email": "bob@example.com",
+    "timestamp": "2024-01-15T16:00:00Z",
+    "title": "refactor(nav): improve navigation menu accessibility",
+    "description": "Redesigned navigation menu for better accessibility and usability.\n\n- Added ARIA labels\n- Improved keyboard navigation\n- Enhanced mobile responsiveness\n- Updated visual hierarchy",
+    "files_changed": 4,
+    "insertions": 92,
+    "deletions": 56
+  },
+  {
+    "sha": "stu901vwx234",
+    "repository": "customer-portal",
+    "author_name": "Alice Williams",
+    "author_email": "alice@example.com",
+    "timestamp": "2024-01-15T09:45:00Z",
+    "title": "fix(payments): resolve transaction handling bug",
+    "description": "Fixed critical bug in payment transaction processing.\n\n- Fixed race condition in payment flow\n- Added transaction rollback logic\n- Improved error recovery\n- Added comprehensive tests",
+    "files_changed": 3,
+    "insertions": 78,
+    "deletions": 12
+  },
+  {
+    "sha": "vwx234yza567",
+    "repository": "api-gateway",
+    "author_name": "Jane Smith",
+    "author_email": "jane@example.com",
+    "timestamp": "2024-01-15T14:10:00Z",
+    "title": "docs(api): update API documentation",
+    "description": "Updated API documentation with new endpoints and examples.\n\n- Added OpenAPI specifications\n- Updated endpoint descriptions\n- Added request/response examples\n- Fixed documentation errors",
+    "files_changed": 2,
+    "insertions": 156,
+    "deletions": 34
+  },
+  {
+    "sha": "yza567bcd890",
+    "repository": "customer-portal",
+    "author_name": "John Doe",
+    "author_email": "john@example.com",
+    "timestamp": "2024-01-15T17:30:00Z",
+    "title": "test(auth): add comprehensive authentication tests",
+    "description": "Added extensive test coverage for authentication system.\n\n- Added unit tests for OAuth2 flow\n- Added integration tests\n- Added edge case tests\n- Improved test fixtures",
+    "files_changed": 5,
+    "insertions": 234,
+    "deletions": 0
+  },
+  {
+    "sha": "bcd890efg123",
+    "repository": "customer-portal",
+    "author_name": "Alice Williams",
+    "author_email": "alice@example.com",
+    "timestamp": "2024-01-15T12:15:00Z",
+    "title": "style(ui): update button styles and colors",
+    "description": "Updated UI components to match new design system.\n\n- Updated button styles\n- Adjusted color palette\n- Improved spacing consistency\n- Added hover states",
+    "files_changed": 6,
+    "insertions": 123,
+    "deletions": 89
+  }
+]

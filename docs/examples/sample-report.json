@@ -1,0 +1,54 @@
+{
+  "report_date": "2024-01-15",
+  "report_type": "daily",
+  "executive_summary": "Engineering focused on customer-facing improvements yesterday. The team made 15 commits across 3 projects, with primary attention on the customer portal. Authentication enhancements and user experience improvements were the main areas of work.",
+  "projects": [
+    {
+      "repository": "customer-portal",
+      "commit_count": 8,
+      "summary": "Authentication improvements and user experience enhancements. The team implemented OAuth2 support for Google and GitHub, redesigned the login flow, and improved error handling throughout the authentication system."
+    },
+    {
+      "repository": "api-gateway",
+      "commit_count": 5,
+      "summary": "Performance optimization and error handling improvements. Work focused on reducing API response times, implementing better caching strategies, and adding comprehensive error logging."
+    },
+    {
+      "repository": "admin-dashboard",
+      "commit_count": 2,
+      "summary": "Minor bug fixes and UI updates. Fixed issues with data table sorting and updated the navigation menu for better accessibility."
+    }
+  ],
+  "contributors": [
+    {
+      "name": "John Doe",
+      "commit_count": 6,
+      "summary": "Worked on authentication system and user management features. Implemented OAuth2 integration and improved session handling."
+    },
+    {
+      "name": "Jane Smith",
+      "commit_count": 4,
+      "summary": "Improved API performance and added comprehensive monitoring. Optimized database queries and implemented caching layer."
+    },
+    {
+      "name": "Bob Johnson",
+      "commit_count": 3,
+      "summary": "Enhanced admin dashboard functionality. Fixed critical bugs and improved user interface components."
+    },
+    {
+      "name": "Alice Williams",
+      "commit_count": 2,
+      "summary": "Fixed critical bugs in payment processing. Resolved issues with transaction handling and improved error recovery."
+    }
+  ],
+  "management_notes": "High activity on customer-facing projects indicates strong focus on strategic initiatives. The team is making good progress on authentication improvements, which aligns with Q1 objectives. No unusual patterns or concerns detected. All work appears well-distributed across the team.",
+  "metadata": {
+    "generated_at": "2024-01-16T00:30:00Z",
+    "total_commits": 15,
+    "total_repositories": 3,
+    "total_contributors": 4,
+    "generation_duration_ms": 2340,
+    "llm_model": "gpt-4",
+    "llm_tokens_used": 1250
+  }
+}
