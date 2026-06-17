@@ -1,0 +1,362 @@
+# Cogence Development Rules
+
+## Project Context
+
+Cogence is an Engineering Intelligence Platform that transforms engineering activity into business-readable reports.
+
+**Core Mission:** Help non-technical leaders understand what engineering accomplished without reading code or attending technical meetings.
+
+**MVP v1 Focus:** Generate daily reports answering "What did we do in the last 24 hours?" using only Gitea commits.
+
+**Target Users:** CEOs, Founders, Engineering Managers, Product Managers who need concise engineering summaries.
+
+## Architecture Overview
+
+- **Backend:** FastAPI (Python 3.11+)
+- **Database:** PostgreSQL (system of record)
+- **Data Source:** Gitea API (commits only in MVP)
+- **AI:** LLM for generating business-readable summaries
+- **Deployment:** Single-tenant, internal-first approach
+
+## Core Principles (Always Follow)
+
+1. **Business First** - Write code that produces manager-friendly outputs, not engineer-friendly metrics
+2. **Signals Over Surveillance** - Collect data to understand work, never to monitor individuals
+3. **Context Before Metrics** - Explain what happened, don't just count things
+4. **Explainability Over Mystery** - AI summaries must be transparent and trustworthy
+5. **Human-Centered Reporting** - Reports must be readable in under 60 seconds
+6. **Incremental Intelligence** - Start simple, add complexity only when validated
+7. **Trust Is Mandatory** - Never compromise on data privacy or misrepresent information
+8. **Actionability Over Information** - Every report should help leaders make decisions
+
+## Key Architecture Decisions (ADRs)
+
+Reference these when making design choices:
+
+- **ADR-001:** Commits are the source of truth (not PRs, issues, or tickets)
+- **ADR-002:** Use business language in reports (avoid technical jargon)
+- **ADR-003:** No code analysis in MVP (no static analysis, embeddings, or vector DBs)
+- **ADR-004:** Signals over surveillance (never rank or score developers)
+- **ADR-005:** AI generates summaries, not facts (LLM interprets, doesn't create data)
+- **ADR-006:** Daily report first (start with 24-hour reports before weekly/monthly)
+- **ADR-007:** Human readability over analytics (optimize for comprehension, not dashboards)
+- **ADR-008:** Single-tenant, internal-first (no multi-tenancy in MVP)
+- **ADR-009:** FastAPI backend (chosen for async support and modern Python)
+- **ADR-010:** PostgreSQL as system of record (single source of truth)
+- **ADR-011:** Scheduled data collection (batch processing, not real-time)
+
+## Code Style Guidelines
+
+### Python
+
+- **Version:** Python 3.11+
+- **Style:** Follow PEP 8 strictly
+- **Type Hints:** Required for all function signatures and class attributes
+- **Async/Await:** Use for all I/O operations (database, API calls)
+- **Docstrings:** Google-style docstrings for all public functions/classes
+
+```python
+async def fetch_commits(repo_id: int, since: datetime) -> list[Commit]:
+    """Fetch commits from a repository since a given time.
+    
+    Per ADR-001, commits are our source of truth.
+    Per ADR-011, this runs on a schedule, not real-time.
+    
+    Args:
+        repo_id: Repository identifier
+        since: Fetch commits after this timestamp
+        
+    Returns:
+        List of Commit objects with metadata
+        
+    Raises:
+        GiteaAPIError: If API request fails
+    """
+```
+
+### Data Models
+
+- **Pydantic:** Use for request/response validation
+- **SQLAlchemy:** Use for database models (async ORM)
+- **Naming:** Use business terms from docs/product/glossary.md
+
+```python
+from pydantic import BaseModel, Field
+from datetime import datetime
+
+class CommitMetadata(BaseModel):
+    """Commit metadata for report generation.
+    
+    Per ADR-001, we collect commit data as our primary signal.
+    """
+    sha: str = Field(..., description="Commit SHA")
+    author: str = Field(..., description="Commit author name")
+    timestamp: datetime = Field(..., description="Commit timestamp")
+    title: str = Field(..., description="Commit message title")
+    description: str | None = Field(None, description="Commit message body")
+    repository: str = Field(..., description="Repository name")
+```
+
+### API Design
+
+- **REST:** Use RESTful conventions
+- **Versioning:** Include `/api/v1/` prefix
+- **Status Codes:** Use appropriate HTTP status codes
+- **Error Handling:** Return structured error responses
+
+```python
+from fastapi import APIRouter, HTTPException, status
+
+router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
+
+@router.get("/daily/{date}", response_model=DailyReport)
+async def get_daily_report(date: str) -> DailyReport:
+    """Get daily engineering report for a specific date.
+    
+    Per ADR-006, daily reports are our primary output.
+    Per ADR-007, optimized for human readability.
+    """
+    try:
+        report = await report_service.get_daily_report(date)
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No report found for {date}"
+            )
+        return report
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+```
+
+### Database
+
+- **Migrations:** Use Alembic for schema changes
+- **Queries:** Use SQLAlchemy async queries
+- **Transactions:** Wrap related operations in transactions
+- **Indexes:** Add indexes for frequently queried fields
+
+```python
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+async def get_commits_by_date(
+    session: AsyncSession,
+    date: datetime
+) -> list[Commit]:
+    """Fetch commits for a specific date.
+    
+    Per ADR-010, PostgreSQL is our system of record.
+    """
+    stmt = select(Commit).where(
+        Commit.timestamp >= date,
+        Commit.timestamp < date + timedelta(days=1)
+    ).order_by(Commit.timestamp.desc())
+    
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+## Testing Guidelines
+
+- **Coverage:** Aim for 80%+ coverage on business logic
+- **Mocking:** Mock external APIs (Gitea, LLM providers)
+- **Fixtures:** Use pytest fixtures for test data
+- **Naming:** Test names should describe behavior
+
+```python
+import pytest
+from unittest.mock import AsyncMock
+
+@pytest.mark.asyncio
+async def test_daily_report_generation_with_no_commits():
+    """Test that report generation handles days with no activity.
+    
+    Per ADR-007, reports should be human-readable even with no data.
+    """
+    # Arrange
+    mock_repo = AsyncMock()
+    mock_repo.get_commits.return_value = []
+    
+    # Act
+    report = await generate_daily_report(mock_repo, date="2024-01-01")
+    
+    # Assert
+    assert report.summary == "No engineering activity recorded"
+    assert len(report.projects) == 0
+```
+
+## Git Commit Convention
+
+Follow the convention in `docs/engineering/git-commit-convention.md`:
+
+```
+type(scope): brief description
+
+Longer explanation if needed.
+
+Refs: #issue-number
+```
+
+**Types:** feat, fix, docs, style, refactor, test, chore
+
+**Examples:**
+```
+feat(reports): add daily report generation endpoint
+fix(gitea): handle API rate limiting gracefully
+docs(adr): add ADR-012 for caching strategy
+```
+
+## What NOT to Do (MVP Exclusions)
+
+Per ADR-003 and MVP scope, do NOT implement:
+
+- ❌ Code quality analysis or static analysis
+- ❌ Source code embeddings or vector databases
+- ❌ Developer productivity scoring or rankings
+- ❌ Real-time data collection (use scheduled batches)
+- ❌ Pull request analysis (commits only)
+- ❌ Issue/ticket integration (Jira, GitHub Issues)
+- ❌ Deployment or CI/CD monitoring
+- ❌ Multi-tenancy or SaaS features
+- ❌ Complex analytics dashboards
+
+## AI/LLM Integration
+
+Per ADR-005, when working with LLMs:
+
+- **Purpose:** Generate human-readable summaries only
+- **Input:** Structured commit data (not raw code)
+- **Output:** Business-language explanations
+- **Transparency:** Always indicate AI-generated content
+- **Validation:** Never let AI create facts; only interpret existing data
+
+```python
+async def generate_summary(commits: list[Commit]) -> str:
+    """Generate AI summary of commits.
+    
+    Per ADR-005, AI generates summaries, not facts.
+    Per ADR-002, output must use business language.
+    """
+    prompt = f"""
+    Summarize the following engineering activity for a non-technical manager.
+    Focus on what was accomplished, not technical details.
+    
+    Commits: {format_commits_for_llm(commits)}
+    
+    Provide a 2-3 sentence summary in business language.
+    """
+    
+    summary = await llm_client.generate(prompt)
+    return f"[AI Summary] {summary}"  # Mark as AI-generated
+```
+
+## File Organization
+
+```
+cogence/
+├── app/
+│   ├── api/          # FastAPI routes
+│   ├── core/         # Core business logic
+│   ├── models/       # SQLAlchemy models
+│   ├── schemas/      # Pydantic schemas
+│   ├── services/     # Business services
+│   └── integrations/ # External integrations (Gitea, LLM)
+├── tests/
+├── alembic/          # Database migrations
+├── docs/             # Documentation
+└── scripts/          # Utility scripts
+```
+
+## Environment Variables
+
+Required environment variables:
+
+```bash
+# Database
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost/cogence
+
+# Gitea
+GITEA_URL=https://gitea.example.com
+GITEA_TOKEN=your_token_here
+
+# LLM Provider
+LLM_API_KEY=your_api_key
+LLM_MODEL=gpt-4
+
+# Application
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+```
+
+## Common Patterns
+
+### Error Handling
+
+```python
+from app.core.exceptions import GiteaAPIError, ReportGenerationError
+
+try:
+    commits = await gitea_client.fetch_commits(repo_id)
+except GiteaAPIError as e:
+    logger.error(f"Failed to fetch commits: {e}")
+    raise ReportGenerationError("Unable to collect commit data") from e
+```
+
+### Logging
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.info("Starting daily report generation", extra={
+    "date": report_date,
+    "repository_count": len(repositories)
+})
+```
+
+### Configuration
+
+```python
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    """Application settings.
+    
+    Per ADR-008, single-tenant configuration.
+    """
+    database_url: str
+    gitea_url: str
+    gitea_token: str
+    
+    class Config:
+        env_file = ".env"
+```
+
+## Questions to Ask Before Coding
+
+1. Does this align with our core principles?
+2. Is this needed for MVP v1 or future versions?
+3. Does this produce business-readable output?
+4. Have I checked relevant ADRs?
+5. Am I following the commit convention?
+6. Are there type hints and docstrings?
+7. Does this respect user privacy (ADR-004)?
+
+## Resources
+
+- [Product Vision](docs/product/vision.md)
+- [MVP v1 Scope](docs/product/mvp/MVP-v1.md)
+- [All ADRs](docs/adr/)
+- [API Documentation](docs/api/README.md)
+- [Setup Guide](docs/development/setup.md)
+
+## Remember
+
+**Cogence is not a developer monitoring tool.**
+**Cogence is a business intelligence tool for engineering organizations.**
+
+Every line of code should help non-technical leaders understand engineering work better.
