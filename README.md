@@ -21,57 +21,47 @@ Cogence bridges that gap by continuously analyzing engineering signals and gener
 - **Where are risks emerging?**
 - **What should leadership know?**
 
-## Quick Start
+## MVP v1 Pilot
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/cogence.git
-cd cogence
-
-# Set up development environment
-./scripts/bootstrap.sh
-
-# Run development server
-./scripts/dev.sh
-```
-
-## MVP v1 Focus
-
-The first version focuses on one question: **"What did we do during the last 24 hours?"**
+The pilot focuses on one question: **"What did we do during the last 24 hours?"**
 
 **Data Sources:** Gitea repositories and Git commits only
 
+**Delivery:** REST API + Rocket.Chat at **21:00 Asia/Tehran** (no dashboard)
+
 **Output:** Daily business-readable report with:
 - Executive summary
-- Projects worked on
+- Active repositories
 - Contributor activities
 - Management notes
 
-See [MVP v1 Documentation](docs/product/mvp/MVP-v1.md) for details.
+See [MVP v1 Documentation](docs/product/mvp/MVP-v1.md) and [Product Slices](docs/product/mvp/product-slices.md) for build order.
 
 ## Documentation
 
-### Product Documentation
+### Product
 - [Vision](docs/product/vision.md) - Why Cogence exists
 - [Principles](docs/product/principles.md) - Core design principles
 - [Requirements](docs/product/requirements.md) - Functional requirements
 - [Target Users](docs/product/target-users.md) - Who we're building for
-- [Roadmap](docs/product/roadmap.md) - Future plans
+- [User Stories (Pilot)](docs/product/user-stories.md) - MVP v1 pilot scope
+- [Backlog](docs/product/backlog.md) - Deferred stories and features
 - [Glossary](docs/product/glossary.md) - Key terminology
+- [MVP v1](docs/product/mvp/MVP-v1.md) - Pilot specification
+- [Product Slices](docs/product/mvp/product-slices.md) - Vertical build plan
 
-### Architecture Documentation
+### Architecture
 - [System Overview](docs/architecture/system-overview.md) - High-level architecture
-- [Backend](docs/architecture/backend.md) - FastAPI implementation
-- [Database](docs/architecture/database.md) - PostgreSQL schema
-- [Frontend](docs/architecture/frontend.md) - UI specifications
-- [Security](docs/architecture/security.md) - Security considerations
-- [Deployment](docs/architecture/deployment.md) - Deployment strategy
+- [Domain Model](docs/architecture/domain-model.md) - Core entities
+- [Data Model](docs/architecture/data-model.md) - PostgreSQL schema
+- [Data Flow](docs/architecture/data-flow.md) - Processing flows
 
 ### Development
 - [Setup Guide](docs/development/setup.md) - Development environment setup
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Git Conventions](docs/engineering/git-commit-convention.md) - Commit message format
 - [Testing Strategy](docs/testing/strategy.md) - Testing approach
+- [API Reference](docs/api/README.md) - REST API documentation
 
 ### Architecture Decision Records (ADRs)
 - [ADR-001](docs/adr/ADR-001-commits-as-source-of-truth.md) - Commits as source of truth
@@ -92,6 +82,7 @@ See [MVP v1 Documentation](docs/product/mvp/MVP-v1.md) for details.
 - **Database:** PostgreSQL
 - **Data Source:** Gitea API
 - **AI:** LLM for report generation
+- **Delivery:** REST API + Rocket.Chat
 - **Deployment:** Single-tenant, internal-first
 
 ## Core Principles
@@ -104,9 +95,9 @@ See [MVP v1 Documentation](docs/product/mvp/MVP-v1.md) for details.
 
 ## Project Status
 
-🚧 **In Development** - MVP v1
+🚧 **In Development** — MVP v1 Pilot
 
-Current focus: Building the core daily report generation system.
+Current focus: [Product Slice 1](docs/product/mvp/product-slices.md) — collect commits from Gitea.
 
 ## License
 

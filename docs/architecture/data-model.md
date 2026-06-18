@@ -775,7 +775,7 @@ REVOKE DELETE ON ALL TABLES IN SCHEMA public FROM cogence_app;
 
 - [Domain Model](domain-model.md)
 - [System Architecture](system-overview.md)
-- [Database Architecture](database.md)
+- [Data Model](data-model.md)
 - [API Documentation](../api/README.md)
 
 ---

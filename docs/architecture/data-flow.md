@@ -643,7 +643,7 @@ except DataValidationError as e:
 ## Related Documentation
 
 - [System Overview](system-overview.md)
-- [Database Schema](database.md)
+- [Data Model](data-model.md)
 - [API Documentation](../api/README.md)
 - [Requirements](../product/requirements.md)
 

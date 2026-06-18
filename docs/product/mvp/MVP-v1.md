@@ -1,5 +1,3 @@
-# MVP-V1.md
-
 # Cogence MVP v1
 
 ## Objective
@@ -12,7 +10,7 @@ Success is measured by whether a non-technical manager can read the report in le
 
 ---
 
-# Problem Statement
+## Problem Statement
 
 Managers often rely on meetings, manual updates, and individual conversations to understand engineering activity.
 
@@ -22,7 +20,7 @@ Cogence aims to provide automatic visibility into engineering activity using dev
 
 ---
 
-# MVP Question
+## MVP Question
 
 The entire MVP is focused on answering one question:
 
@@ -32,7 +30,7 @@ Every feature included in MVP v1 must contribute directly to answering this ques
 
 ---
 
-# Target User
+## Target User
 
 Primary User:
 
@@ -40,6 +38,8 @@ Primary User:
 * Founder
 * Engineering Manager
 * Product Manager
+
+See [target-users.md](../target-users.md) for details.
 
 Characteristics:
 
@@ -50,7 +50,7 @@ Characteristics:
 
 ---
 
-# Data Sources
+## Data Sources
 
 MVP v1 uses only:
 
@@ -72,7 +72,7 @@ Excluded from MVP:
 
 ---
 
-# Inputs
+## Inputs
 
 Required:
 
@@ -82,23 +82,59 @@ Required:
 Optional:
 
 * Company Name
+* Rocket.Chat webhook URL (for scheduled delivery)
 
 ---
 
-# Core Workflow
+## Report Schedule
+
+| Setting | Value |
+|---------|-------|
+| Timezone | `Asia/Tehran` |
+| Generation & delivery | Daily at **21:00** (9:00 PM) |
+| Report period | Calendar day in `Asia/Tehran` (00:00–23:59) |
+
+Each night at 21:00 Asia/Tehran, Cogence collects commits for that calendar day, generates the report, and delivers it.
+
+Commits made after 21:00 belong to the next calendar day's report.
+
+---
+
+## Report Delivery
+
+MVP v1 has **no dashboard**. Reports reach managers through:
+
+1. **REST API** — `GET /api/v1/reports/daily/{date}` and `GET /api/v1/reports/daily/latest`
+2. **Rocket.Chat** — scheduled message posted to a configured channel at 21:00 Asia/Tehran
+
+Email, Slack, and web UI are out of scope for the pilot. See [backlog.md](../backlog.md).
+
+---
+
+## Core Workflow
 
 1. Connect to Gitea
 2. Discover repositories
-3. Fetch commits from the last 24 hours
+3. Fetch commits for the current calendar day (Asia/Tehran)
 4. Store commit metadata
 5. Aggregate commits
 6. Generate AI summary
 7. Store report
-8. Deliver report
+8. Deliver report (API + Rocket.Chat)
 
 ---
 
-# Commit Data Collected
+## Commit Culture
+
+Commit **counts** are not a success metric. Cogence does not rank contributors or repositories by volume.
+
+The platform encourages **atomic commits** with clear, descriptive messages. When engineers write focused commits with meaningful titles and descriptions, reports become more accurate and useful for leadership.
+
+Good commit hygiene is a cultural outcome of using Cogence — not surveillance.
+
+---
+
+## Commit Data Collected
 
 For each commit:
 
@@ -109,23 +145,21 @@ For each commit:
 * Commit Title
 * Commit Description
 
-Additional metadata:
+Additional metadata (stored for future use, not shown in pilot reports):
 
 * Files Changed
 * Insertions
 * Deletions
 
-Additional metadata is collected for future analytics but not used directly in MVP reporting.
-
 ---
 
-# Report Sections
+## Report Sections
 
-## Executive Summary
+### Executive Summary
 
-High-level explanation of what engineering accomplished during the last 24 hours.
+High-level explanation of what engineering accomplished during the report period.
 
-Example:
+Example themes:
 
 * Authentication improvements
 * Customer workflow enhancements
@@ -133,20 +167,22 @@ Example:
 
 ---
 
-## Projects Worked On
+### Active Repositories
 
-List repositories receiving engineering activity.
+List repositories that received engineering activity.
 
 Example:
 
 * Chatbot
 * Internal Portal
 
+Use repository names, not informal "project" labels, unless a future grouping layer is added.
+
 ---
 
-## Contributor Summary
+### Contributor Summary
 
-List contributors and a brief summary of their activities.
+List contributors and a brief summary of **what areas they worked on**.
 
 Example:
 
@@ -154,25 +190,23 @@ Example:
 * Donald: AI workflow updates
 * Florentino: Frontend enhancements
 
-No rankings.
-
-No productivity scores.
+No rankings. No productivity scores. No commit-count comparisons.
 
 ---
 
-## Management Notes
+### Management Notes
 
 Important observations.
 
 Examples:
 
 * Activity focused on customer-facing improvements.
-* Development concentrated on two strategic projects.
+* Development concentrated on two strategic repositories.
 * No unusual activity detected.
 
 ---
 
-# Explicit Non-Goals
+## Explicit Non-Goals
 
 MVP v1 does NOT attempt to answer:
 
@@ -185,14 +219,20 @@ MVP v1 does NOT attempt to answer:
 * Security analysis
 * Productivity scoring
 
+MVP v1 also does NOT include:
+
+* Dashboards or web UI
+* Commit-count leaderboards
+* Sorting repositories or contributors by activity volume
+
 ---
 
-# Success Criteria
+## Success Criteria
 
 A manager should be able to answer:
 
 * What did engineering do?
-* Which projects were active?
+* Which repositories were active?
 * Who contributed?
 * What should I know?
 
@@ -200,18 +240,28 @@ after reading the report for less than 60 seconds.
 
 ---
 
-# Future Versions
+## Implementation
+
+Build order is defined in [product-slices.md](product-slices.md).
+
+Pilot user stories are in [user-stories.md](../user-stories.md). Deferred work is in [backlog.md](../backlog.md).
+
+---
+
+## Future Versions
 
 Potential future capabilities:
 
 * Weekly reports
 * Monthly reports
+* Web dashboard
+* Email delivery
+* Slack/Teams integration
 * Commit quality scoring
 * Risk detection
 * Ownership analysis
 * Jira integration
 * Deployment integration
 * Executive recommendations
-* Engineering intelligence dashboards
 
 These are intentionally excluded from MVP v1.

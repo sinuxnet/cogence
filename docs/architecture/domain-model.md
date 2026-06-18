@@ -623,7 +623,7 @@ stateDiagram-v2
 ## Related Documentation
 
 - [System Architecture](system-overview.md)
-- [Database Schema](database.md)
+- [Data Model](data-model.md)
 - [Data Model](data-model.md)
 - [API Documentation](../api/README.md)
 - [Product Glossary](../product/glossary.md)

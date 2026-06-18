@@ -253,7 +253,7 @@ CREATE TABLE reports (
 );
 ```
 
-See [database.md](database.md) for complete schema documentation.
+See [data-model.md](data-model.md) for complete schema documentation.
 
 ---
 
@@ -326,7 +326,7 @@ See [API Documentation](../api/README.md) for complete API reference.
 - Aggregate data only in reports
 - Transparent data collection
 
-See [security.md](security.md) for detailed security documentation.
+See [data-model.md](data-model.md) for database schema details.
 
 ---
 
@@ -369,7 +369,9 @@ graph TB
 - **Reverse Proxy:** Nginx or similar
 - **Monitoring:** Prometheus + Grafana (future)
 
-See [deployment.md](deployment.md) for deployment procedures.
+### Deployment (Pilot)
+
+Single-tenant internal deployment. Scheduler runs the nightly pipeline at 21:00 `Asia/Tehran`. Reports delivered via API and Rocket.Chat.
 
 ---
 
@@ -486,11 +488,9 @@ See [setup.md](../development/setup.md) for detailed setup instructions.
 
 ## Related Documentation
 
-- [Backend Architecture](backend.md) - Detailed backend design
-- [Database Schema](database.md) - Complete database documentation
+- [Data Model](data-model.md) - Complete database documentation
+- [Domain Model](domain-model.md) - Core entities
 - [API Reference](../api/README.md) - API endpoints and examples
-- [Security](security.md) - Security implementation details
-- [Deployment](deployment.md) - Deployment procedures
 - [ADRs](../adr/) - Architecture decision records
 
 ---
