@@ -165,6 +165,37 @@ AI-generated business-readable text that translates technical activity into busi
 
 ---
 
+### Observability Gap
+A neutral note when a contributor's commit message did not carry enough information; the summary relied on other signals (e.g. truncated diff).
+
+**Not:** "Bad committer", "Poor performer", "Non-compliant"  
+**Related:** Commit Culture, Contributor Summary, ADR-004
+
+---
+
+### Report Depth
+How much source material the LLM reads when generating a report: `brief`, `standard`, or `deep`. MVP v1 implements `standard` only.
+
+**Related:** Daily Report, Standard Report, Truncated Diff
+
+---
+
+### Report Locale
+The configured language for generated report text (e.g. `fa` for Persian, `en` for English).
+
+**Not:** Auto-detected language, mixed-locale output  
+**Related:** Business Language, Daily Report
+
+---
+
+### Calendar Day
+One full day in `Asia/Tehran` from 00:00 to 23:59. The period a Daily Report covers.
+
+**Not:** "Last 24 hours", rolling window  
+**Related:** Daily Report, Report Date
+
+---
+
 ## Technical Terms
 
 ### API
@@ -454,6 +485,6 @@ Consistent terminology used throughout the project, from code to documentation t
 
 ---
 
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-19
 
 **Version:** 1.0.0
