@@ -1,6 +1,8 @@
 {
   "report_date": "2024-01-15",
   "report_type": "daily",
+  "report_depth": "standard",
+  "locale": "en",
   "timezone": "Asia/Tehran",
   "executive_summary": "Engineering focused on customer-facing improvements. The team worked across three repositories, with primary attention on the customer portal. Authentication enhancements and user experience improvements were the main areas of work.",
   "repositories": [
