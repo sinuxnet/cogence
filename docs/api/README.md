@@ -186,29 +186,60 @@ curl http://localhost:8000/api/v1/reports/daily/latest
 
 ---
 
-### Regenerate Daily Report
+### Generate Daily Report
 
-Regenerate a report for a specific date (admin only).
+Generate a daily report for a specific date. Idempotent - returns existing report if already generated.
 
-**Endpoint:** `POST /api/v1/reports/daily/{date}/regenerate`
+**Endpoint:** `POST /api/v1/reports/daily/{date}/generate`
 
 **Parameters:**
-- `date` (path, required): Date in YYYY-MM-DD format
+- `date` (path, required): Date in YYYY-MM-DD format (Asia/Tehran timezone)
+- `depth` (query, optional, default: `standard`): Report depth tier
+- `locale` (query, optional, default from `COGENCE_REPORT_LOCALE`): Report language (`fa`, `en`)
 
-**Response:** `202 Accepted`
+**Behavior:**
+- Idempotent: Returns existing report if already generated for the date
+- Does NOT regenerate if report exists (true idempotency)
+- Collects commits → generates summary → stores → returns in one call
+
+**Response:** `200 OK`
 
 ```json
 {
-  "message": "Report regeneration started",
   "report_date": "2024-01-15",
-  "status": "processing"
+  "report_type": "daily",
+  "report_depth": "standard",
+  "locale": "en",
+  "timezone": "Asia/Tehran",
+  "executive_summary": "Engineering focused on customer-facing improvements...",
+  "repositories": [...],
+  "contributors": [...],
+  "management_notes": "High activity on customer-facing repositories...",
+  "metadata": {
+    "generated_at": "2024-01-16T00:30:00+03:30",
+    "total_commits": 15,
+    "total_repositories": 3,
+    "total_contributors": 4,
+    "non_atomic_commits": 2,
+    "atomic_commit_threshold": 10,
+    "generation_duration_ms": 2340,
+    "llm_model": "gpt-4",
+    "llm_tokens_used": 1250
+  }
 }
 ```
 
-**Example Request:**
+**Example Requests:**
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/reports/daily/2024-01-15/regenerate
+# Generate with defaults
+curl -X POST http://localhost:8000/api/v1/reports/daily/2024-01-15/generate
+
+# Generate with Persian locale
+curl -X POST "http://localhost:8000/api/v1/reports/daily/2024-01-15/generate?locale=fa"
+
+# Generate with explicit depth
+curl -X POST "http://localhost:8000/api/v1/reports/daily/2024-01-15/generate?depth=standard&locale=en"
 ```
 
 ---
