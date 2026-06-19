@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted (diff scope narrowed by [ADR-012](ADR-012-truncated-diff-for-llm-translation.md))
 
 ## Date
 
