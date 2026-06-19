@@ -197,6 +197,13 @@ So I can observe engineering work through signals I already understand without A
 | Prometheus / Grafana | Operational hardening post-pilot |
 | Token encryption at rest | Single-tenant pilot; env-based secrets first |
 | Multi-channel delivery | External bash for pilot |
+| Diff truncation token limits | Start with reasonable defaults; tune post-pilot based on cost data |
+| LLM-based atomic commit detection | MVP uses simple file count rule; semantic "multiple purposes" analysis deferred |
+| Commit quality indicator API | `atomic_commit_ratio` and quality metrics in metadata |
+| Parallel Gitea fetching | MVP uses sequential with delay; add concurrency limit if needed |
+| Smart diff fetching optimization | Fetch only for vague commits to reduce cost; defer until cost patterns known |
+| Per-organization locale configuration | Multi-tenancy feature; database config per org |
+| Multiple bearer tokens | MVP uses single shared token; token management API for future |
 
 ---
 
