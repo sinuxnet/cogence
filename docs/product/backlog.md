@@ -134,13 +134,51 @@ So I don't need to use Rocket.Chat or API tools.
 
 ---
 
-### Story F7: Commit Quality Scoring
+### Story F7: Commit Quality Coaching Channel
 
 **As an Engineering Manager,**  
-I want feedback on commit message quality,  
-So the team improves report accuracy over time.
+I want commit-quality feedback in a separate channel (not the CEO daily report),  
+So the team improves observability without surveillance in business reports.
 
-**Note:** Pilot encourages atomic commits culturally; formal scoring is post-validation.
+**Note:** MVP v1 uses neutral Observability Gap notes in the daily report only. A dedicated coaching channel is post-validation.
+
+---
+
+### Story F8: Report Depth Tiers
+
+**As a Manager,**  
+I want to choose how detailed a report is (`brief`, `standard`, `deep`),  
+So I can balance LLM cost against how much observability I need.
+
+**Note:** MVP v1 implements `standard` only. See [MVP-v1.md](mvp/MVP-v1.md).
+
+---
+
+### Story F9: Built-in Delivery Channels
+
+**As a Manager,**  
+I want Cogence to post reports to Rocket.Chat, Telegram, SMS, and email natively,  
+So I do not need external cron scripts.
+
+**Note:** MVP v1 uses external bash + webhook. Native channels are post-validation.
+
+---
+
+### Story F10: Contributor Identity Mapping
+
+**As a Team Lead,**  
+I want to merge multiple Git emails into one contributor,  
+So reports reflect people rather than misconfigured Git identities.
+
+**Note:** MVP v1 shows raw Git authors intentionally to encourage better Git hygiene.
+
+---
+
+### Story F11: Jira and Issue Tracker Observability
+
+**As a Manager,**  
+I want issue summaries alongside commits,  
+So I can observe engineering work through signals I already understand without AI.
 
 ---
 
@@ -150,11 +188,15 @@ So the team improves report accuracy over time.
 |------------|-------|
 | Interactive dashboards | ADR-007 — reports over dashboards |
 | HTML report rendering | JSON + Rocket.Chat message for pilot |
-| Repository include/exclude filters | Default: all accessible repos |
+| Repository include/exclude filters | MVP: all accessible repos; filters deferred |
 | Repository grouping (teams) | Needs product definition |
+| Report depth `brief` / `deep` | MVP: `standard` only |
+| Internal job scheduler | External cron + bash for pilot |
+| Built-in Rocket.Chat / Telegram / SMS | External bash for pilot |
+| Contributor identity merging | Raw Git authors for pilot |
 | Prometheus / Grafana | Operational hardening post-pilot |
 | Token encryption at rest | Single-tenant pilot; env-based secrets first |
-| Multi-channel delivery | Rocket.Chat only in pilot |
+| Multi-channel delivery | External bash for pilot |
 
 ---
 
@@ -177,4 +219,4 @@ Move a backlog item into scope when:
 
 ---
 
-**Last Updated:** 2026-06-18
+**Last Updated:** 2026-06-19
