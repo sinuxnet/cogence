@@ -37,13 +37,15 @@
       "summary": "Fixed critical bugs in payment processing. Resolved issues with transaction handling and improved error recovery."
     }
   ],
-  "management_notes": "High activity on customer-facing repositories indicates strong focus on strategic initiatives. The team is making good progress on authentication improvements, which aligns with Q1 objectives. No unusual patterns or concerns detected. All work appears well-distributed across the team.",
+  "management_notes": "High activity on customer-facing repositories indicates strong focus on strategic initiatives. The team is making good progress on authentication improvements, which aligns with Q1 objectives. Some commits touched many files, which may reduce summary precision. Atomic commits help Cogence provide clearer insights. No unusual patterns or concerns detected. All work appears well-distributed across the team.",
   "metadata": {
     "generated_at": "2024-01-15T21:00:00+03:30",
     "delivery": ["api", "rocketchat"],
     "total_commits": 15,
     "total_repositories": 3,
     "total_contributors": 4,
+    "non_atomic_commits": 2,
+    "atomic_commit_threshold": 10,
     "generation_duration_ms": 2340,
     "llm_model": "gpt-4",
     "llm_tokens_used": 1250
