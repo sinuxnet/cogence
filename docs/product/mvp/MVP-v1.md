@@ -157,6 +157,18 @@ The platform encourages **atomic commits** with clear, descriptive messages. Whe
 
 Good commit hygiene is a cultural outcome of using Cogence — not surveillance. Reports may include neutral **Observability Gap** notes when a message was too vague; they do not label developers as "bad committers."
 
+### Atomic Commit Detection (MVP v1)
+
+MVP v1 includes simple non-atomic commit detection to help managers understand when report precision may be affected:
+
+- **Detection rule**: Commits changing more than `ATOMIC_COMMIT_THRESHOLD` files (default: 10) are flagged as non-atomic
+- **Metadata**: Count of non-atomic commits included in report metadata for debugging
+- **Management Notes**: When non-atomic commits are detected, an educational note explains: "Some commits touched many files, which may reduce summary precision. Atomic commits help Cogence provide clearer insights."
+- **No surveillance**: Notes are team-level and educational, not punitive or individual-focused
+- **Configurable**: Threshold set via environment variable for pilot tuning
+
+**Future enhancement** (deferred to backlog): LLM-based semantic detection of commits with multiple unrelated purposes.
+
 Multiple Git identities for the same person appear as separate contributors in MVP v1 — fixing Git config is a team responsibility.
 
 ---
