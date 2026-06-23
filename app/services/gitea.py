@@ -164,3 +164,42 @@ class GiteaClient:
             page += 1
 
         return commits
+
+    async def fetch_commit_diff(
+        self, repo_full_name: str, sha: str, max_lines_per_file: int = 10
+    ) -> str:
+        """Fetch a truncated unified diff for a commit. Returns empty string on failure."""
+        assert self._client
+        try:
+            # Gitea's REST API (/api/v1/...) has no raw-diff endpoint; the .diff suffix
+            # on the web path returns a standard unified diff without authentication issues
+            r = await self._client.get(f"/{repo_full_name}/commit/{sha}.diff")
+            if r.status_code != 200:
+                return ""
+            # Keep file headers intact (diff/index/---/+++) and truncate hunk content
+            # to max_lines_per_file lines per file section (per ADR-012: ~10 lines is enough
+            # for the LLM to understand intent without overloading the context window)
+            truncated: list[str] = []
+            content_lines = 0
+            in_header = True
+            for line in r.text.splitlines():
+                if line.startswith("diff --git"):
+                    in_header = True
+                    content_lines = 0
+                    truncated.append(line)
+                elif in_header and (
+                    line.startswith("index ")
+                    or line.startswith("--- ")
+                    or line.startswith("+++ ")
+                ):
+                    truncated.append(line)
+                elif line.startswith("@@"):
+                    in_header = False
+                    content_lines = 0
+                    truncated.append(line)
+                elif not in_header and content_lines < max_lines_per_file:
+                    truncated.append(line)
+                    content_lines += 1
+            return "\n".join(truncated)
+        except Exception:
+            return ""
