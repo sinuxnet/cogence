@@ -152,28 +152,26 @@ cp .env.example .env
 #### Edit .env
 
 ```bash
-# Database
-DATABASE_URL=postgresql+asyncpg://cogence_user:dev_password@localhost/cogence_dev
+# Database (use localhost for local dev; docker-compose overrides this automatically)
+DATABASE_URL=postgresql+asyncpg://cogence:cogence@localhost:5432/cogence
 
-# Gitea Configuration
+# Gitea
 GITEA_URL=https://your-gitea-instance.com
 GITEA_TOKEN=your_gitea_access_token
 
-# LLM Provider (OpenAI example)
-LLM_PROVIDER=openai
-LLM_API_KEY=your_openai_api_key
-LLM_MODEL=gpt-4
+# API auth — single static bearer token for all API clients
+API_SECRET_KEY=change_this_to_a_random_secret
 
-# Application
-ENVIRONMENT=development
-LOG_LEVEL=DEBUG
-SECRET_KEY=your-secret-key-here
+# OpenAI
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
 
-# Optional
-COMPANY_NAME=Your Company
+# Report settings
+ATOMIC_COMMIT_THRESHOLD=10
+REPORT_LOCALE=en   # en or fa
 ```
 
-#### Generate Secret Key
+#### Generate API Secret Key
 
 ```python
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -181,23 +179,18 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ### 6. Database Migrations
 
-#### Initialize Alembic
-
 ```bash
-# Create initial migration
-alembic revision --autogenerate -m "Initial schema"
-
-# Apply migrations
+# Apply all migrations (migrations are pre-written, not auto-generated)
 alembic upgrade head
 ```
 
 #### Verify Tables
 
 ```bash
-psql -U cogence_user -d cogence_dev -c "\dt"
+psql -U cogence -d cogence -c "\dt"
 ```
 
-Should show tables: `repositories`, `commits`, `reports`, `collection_runs`
+Should show tables: `repositories`, `commits`, `reports`
 
 ### 7. Verify Setup
 
@@ -234,11 +227,7 @@ curl http://localhost:8000/health
 
 Should return:
 ```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "version": "1.0.0"
-}
+{"status": "ok"}
 ```
 
 ---
@@ -372,59 +361,36 @@ alembic upgrade head
 
 ---
 
-## Docker Setup (Optional)
+## Docker Setup
 
-### Docker Compose
+Docker is the recommended way to run Cogence. See [docker.md](docker.md) for the full deployment guide.
 
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: cogence_dev
-      POSTGRES_USER: cogence_user
-      POSTGRES_PASSWORD: dev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  app:
-    build: .
-    command: uvicorn app.main:app --host 0.0.0.0 --reload
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql+asyncpg://cogence_user:dev_password@db/cogence_dev
-    depends_on:
-      - db
-
-volumes:
-  postgres_data:
-```
-
-### Run with Docker
+### Quick Start with Docker
 
 ```bash
-# Start services
-docker-compose up -d
+cp .env.example .env
+# fill in GITEA_URL, GITEA_TOKEN, API_SECRET_KEY, OPENAI_API_KEY in .env
 
-# View logs
-docker-compose logs -f app
+docker compose up -d
+# migrations run automatically on first start
 
-# Run migrations
-docker-compose exec app alembic upgrade head
+curl http://localhost:8000/health
+```
 
-# Run tests
-docker-compose exec app pytest
+### Useful Docker Commands
 
-# Stop services
-docker-compose down
+```bash
+# View API logs
+docker compose logs -f api
+
+# Run migrations manually
+docker compose exec api alembic upgrade head
+
+# Stop services (data preserved in volume)
+docker compose down
+
+# Stop and wipe all data
+docker compose down -v
 ```
 
 ---

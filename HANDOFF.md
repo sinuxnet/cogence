@@ -2,22 +2,21 @@
 
 ## What was built
 
-This session implemented **Slice 1** (Gitea collector) and **Slice 2** (persist commits) from `docs/product/mvp/product-slices.md`.
-
-The codebase went from docs-only to a working data collection and persistence pipeline.
+This codebase now contains the complete MVP v1 pipeline across all six slices from `docs/product/mvp/product-slices.md`.
 
 ---
 
-## Decisions made this session
+## Decisions carried forward
 
 | Decision | Value |
 |----------|-------|
 | LLM provider | OpenAI `gpt-4o-mini` |
-| Report language | English (Persian deferred post-MVP) |
+| Report language | English default (`REPORT_LOCALE=en`); Persian (`fa`) via env var |
 | API auth | Single static `API_SECRET_KEY` env-var bearer token |
-| Diff truncation | ~10 lines of unified diff per file — simple, not a focus for MVP |
+| Diff truncation | ~10 lines of unified diff per file at generation time; discarded after (ADR-012) |
 | Gitea HTTP client | `httpx` (async) |
-| DB | User-provided `DATABASE_URL`; docker-compose runs Postgres for dev |
+| DB | User-provided `DATABASE_URL`; docker-compose runs Postgres 16 for dev/prod |
+| LLM calls per report | 4 separate calls (exec summary, per-repo, per-contributor, management notes) |
 
 ---
 
@@ -25,27 +24,46 @@ The codebase went from docs-only to a working data collection and persistence pi
 
 ```
 app/
+├── api/
+│   ├── deps.py            # Bearer auth dependency
+│   └── routes/
+│       ├── health.py      # GET /health, GET /health/ready
+│       └── reports.py     # POST + GET report endpoints
 ├── core/
 │   └── config.py          # Pydantic Settings — reads all env vars
 ├── db/
 │   └── session.py         # Async SQLAlchemy engine + session factory
 ├── models/
-│   └── orm.py             # Repository and Commit ORM models
+│   └── orm.py             # Repository, Commit, Report ORM models
 ├── services/
-│   ├── gitea.py           # GiteaClient — connect, list repos, fetch commits
-│   └── ingest.py          # upsert_repository, ingest_commit, query_commits_for_day
-└── collector.py           # CLI: python -m app.collector [YYYY-MM-DD]
+│   ├── aggregator.py      # Aggregate commits into per-repo / per-contributor structures
+│   ├── ai.py              # OpenAI calls for all four report sections
+│   ├── gitea.py           # GiteaClient — connect, list repos, fetch commits, fetch diffs
+│   ├── ingest.py          # upsert_repository, ingest_commit, query_commits_for_day
+│   └── report.py          # build_report — template path + AI path + fallback
+├── collector.py           # CLI: python -m app.collector [YYYY-MM-DD]
+├── main.py                # FastAPI app entry point
+└── reporter.py            # CLI: python -m app.reporter [YYYY-MM-DD] (template, no LLM)
 
 alembic/
 ├── versions/
-│   └── 0001_initial_schema.py   # repositories + commits tables
-├── env.py                 # async Alembic setup
+│   ├── 0001_initial_schema.py   # repositories + commits tables
+│   └── 0002_add_reports.py      # reports table
+├── env.py
 └── script.py.mako
 
-requirements.txt           # runtime deps
-requirements-dev.txt       # adds pytest + pytest-asyncio
-docker-compose.yml         # Postgres 16 on :5432
-.env.example               # copy to .env and fill in
+scripts/
+└── deliver.sh             # Bash delivery script for Rocket.Chat (Slice 6)
+
+Dockerfile                 # python:3.12-slim, non-root user, runs migrations on start
+docker-compose.yml         # db (Postgres 16) + api; DATABASE_URL auto-overridden
+.dockerignore
+
+docs/
+├── api/README.md                    # updated — matches actual endpoints
+├── development/setup.md             # updated — correct env vars, Docker section
+├── development/docker.md            # new — Docker deployment guide
+└── product/manager-guide.md        # new — for non-technical managers
 ```
 
 ---
@@ -54,79 +72,81 @@ docker-compose.yml         # Postgres 16 on :5432
 
 | Variable | Required | Notes |
 |----------|----------|-------|
-| `DATABASE_URL` | yes | `postgresql+asyncpg://cogence:cogence@localhost:5432/cogence` for docker-compose |
+| `DATABASE_URL` | yes (local) | Overridden by docker-compose; `postgresql+asyncpg://cogence:cogence@localhost:5432/cogence` for local dev |
 | `GITEA_URL` | yes | Base URL of the Gitea instance |
 | `GITEA_TOKEN` | yes | Personal access token |
 | `API_SECRET_KEY` | yes | Static bearer token for the Cogence API |
-| `OPENAI_API_KEY` | yes | Used in Slice 4 onwards |
+| `OPENAI_API_KEY` | yes | Used by Slice 4 AI summaries |
 | `OPENAI_MODEL` | no | Defaults to `gpt-4o-mini` |
 | `ATOMIC_COMMIT_THRESHOLD` | no | Defaults to `10` files |
-| `REPORT_LOCALE` | no | Defaults to `en` |
+| `REPORT_LOCALE` | no | `en` or `fa`; defaults to `en` |
 
 ---
 
 ## How to run
 
+### With Docker (recommended)
+
 ```bash
-# Start Postgres
+cp .env.example .env
+# fill in GITEA_URL, GITEA_TOKEN, API_SECRET_KEY, OPENAI_API_KEY
+
 docker compose up -d
+# migrations run automatically
 
-# Install deps (system-wide with rtk)
-rtk pip install -r requirements.txt --break-system-packages -i https://pypi.org/simple/
+curl http://localhost:8000/health/ready
+curl -X POST -H "Authorization: Bearer $API_SECRET_KEY" \
+  http://localhost:8000/api/v1/reports/daily/$(date +%Y-%m-%d)/generate
+```
 
-# Run migrations
+### Local (no Docker)
+
+```bash
+docker compose up -d db        # only start Postgres
+pip install -r requirements.txt
 alembic upgrade head
+uvicorn app.main:app --reload
 
-# Collect commits (defaults to today in Asia/Tehran)
-python -m app.collector
+# collect + template report (no LLM):
+python -m app.reporter 2026-06-23
 
-# Collect for a specific date
-python -m app.collector 2026-06-22
-
-# Run twice to verify idempotence — second run shows 0 new, all duplicates skipped
+# collect only:
+python -m app.collector 2026-06-23
 ```
 
 ---
 
-## Slice 1 done-when (all met)
+## Slice completion
 
-- [x] Outputs commit metadata (repo, SHA, author, timestamp, title)
-- [x] Handles invalid credentials with a clear error (`GiteaAuthError`)
-- [x] Handles unreachable Gitea (`GiteaError`)
-- [x] Skips duplicate SHAs within a collection run
-
-## Slice 2 done-when (all met)
-
-- [x] `repositories` and `commits` tables created via Alembic
-- [x] Idempotent ingest — re-running collector skips existing SHAs
-- [x] `query_commits_for_day(session, date_str)` in `ingest.py` returns commits within a Tehran calendar-day boundary
+| Slice | Status | Key output |
+|-------|--------|------------|
+| 1 — Collect commits | done | `app/services/gitea.py`, `app/collector.py` |
+| 2 — Persist commits | done | `app/services/ingest.py`, `app/models/orm.py`, migration 0001 |
+| 3 — Template report | done | `app/services/aggregator.py`, `app/reporter.py` |
+| 4 — AI summaries | done | `app/services/ai.py`, `app/services/report.py` |
+| 5 — Report API | done | `app/api/`, `app/main.py`, migration 0002 |
+| 6 — Delivery script | done | `scripts/deliver.sh` |
 
 ---
 
-## What is next: Slice 3 — Template Report
+## Pilot exit criteria status
 
-Goal: aggregate stored commits → 4-section report JSON (no LLM yet). Internal validation only.
-
-Scope:
-- Aggregate commits from DB by repository and contributor (raw Git author)
-- Build report JSON with all four sections: executive summary, active repositories, contributors, management notes
-- Template/placeholder text (no LLM calls yet)
-- Empty-day report when no commits exist
-- Output to stdout or file for internal inspection
-
-Done when:
-- Report JSON generated from stored commits
-- All four sections present
-- Empty day produces explicit "no activity" report
-
-Reference: `docs/product/mvp/product-slices.md` → Slice 3, and `docs/examples/` for the expected JSON shape.
+| Criterion | Status |
+|-----------|--------|
+| `POST .../daily/{date}/generate` produces correct report idempotently | ready |
+| Delivery script posts to Rocket.Chat at 07:00 Tehran | ready (needs cron setup) |
+| Manager confirms readability in < 60 seconds (Persian locale) | pending pilot |
+| Factual accuracy spot-check | pending pilot |
+| No surveillance patterns in output | built-in (no rankings, no scores) |
 
 ---
 
-## Key source files to read first
+## What is next (post-MVP)
 
-1. `docs/product/mvp/MVP-v1.md` — the MVP spec
-2. `docs/product/mvp/product-slices.md` — slice definitions and done criteria
-3. `app/services/gitea.py` — `CommitData` and `RepoData` dataclasses (used throughout)
-4. `app/models/orm.py` — `Repository` and `Commit` ORM models
-5. `app/services/ingest.py` — `query_commits_for_day` for the report aggregator
+All remaining items are in `docs/product/backlog.md`. Top candidates for a second iteration:
+
+- `REPORT_LOCALE=fa` testing with a real manager
+- Contributor identity merging (multiple emails → one person)
+- Repository allowlists / exclude rules
+- Report depth tiers (`brief`, `deep`)
+- Built-in Rocket.Chat delivery channel
