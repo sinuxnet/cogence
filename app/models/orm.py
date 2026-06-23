@@ -4,6 +4,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
+
 class Base(DeclarativeBase):
     pass
 
@@ -48,3 +49,15 @@ class Commit(Base):
     )
 
     repository: Mapped["Repository"] = relationship(back_populates="commits")
+
+
+class Report(Base):
+    __tablename__ = "reports"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    report_date: Mapped[str] = mapped_column(String(10), unique=True, index=True, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

@@ -2,6 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.orm import Commit, Repository
@@ -70,8 +71,11 @@ async def ingest_commit(
 async def query_commits_for_day(session: AsyncSession, date_str: str) -> list[Commit]:
     """Return all stored commits for a Tehran calendar day, ordered by timestamp."""
     since, until = _tehran_day_bounds(date_str)
+    # selectinload is required: SQLAlchemy async sessions cannot implicitly lazy-load
+    # relationships inside coroutines — accessing .repository without it raises MissingGreenlet
     result = await session.execute(
         select(Commit)
+        .options(selectinload(Commit.repository))
         .where(Commit.timestamp >= since, Commit.timestamp <= until)
         .order_by(Commit.timestamp)
     )
