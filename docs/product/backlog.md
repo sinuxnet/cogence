@@ -86,9 +86,37 @@ So I can optimize resource allocation.
 
 ### Story F1: Weekly Aggregation
 
-**As an Executive,**  
-I want a weekly summary of engineering activity,  
+**As an Executive,**
+I want a weekly summary of engineering activity,
 So I can understand trends without reading daily reports.
+
+**Acceptance Criteria:**
+- New endpoint: `POST /api/v1/reports/weekly/{start_date}/generate`
+- Aggregates 7 days of daily commits (Monday-Sunday)
+- Generates weekly executive summary
+- Shows weekly trends and patterns
+- Highlights significant changes from previous week
+- Includes weekly totals (commits, repositories, contributors)
+- Same business language as daily reports
+- Response format similar to daily reports
+
+**Technical Notes:**
+- Reuse daily report aggregation logic
+- Add weekly-specific LLM prompts
+- Cache weekly reports like daily reports
+- Consider week boundaries (ISO week vs calendar week)
+- Add `report_type: "weekly"` to distinguish from daily
+
+**Dependencies:**
+- Daily reports must be stable and validated
+- LLM prompts need weekly-specific templates
+- Database schema may need weekly report table or type field
+
+**Deferred Because:**
+- MVP v1 focuses on daily reports only (ADR-006)
+- Weekly aggregation adds complexity
+- Need to validate daily reports first
+- Requires additional LLM prompt engineering
 
 ---
 
