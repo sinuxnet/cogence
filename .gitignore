@@ -18,3 +18,4 @@ htmlcov/
 .qoder/
 .mcp.json
 .opencode.json
+graphify-out/
