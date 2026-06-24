@@ -45,7 +45,7 @@ if [ -z "$REPORT" ]; then
     exit 1
 fi
 
-# Extract fields from new v2 structure (general / projects / contributors)
+# Extract fields from report structure (general / projects / contributors)
 TOTAL=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['total_updates'])")
 ORGS=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['organizations_count'])")
 CONTRIBS=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['contributor_count'])")
