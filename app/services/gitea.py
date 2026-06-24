@@ -84,7 +84,7 @@ class GiteaClient:
         assert self._client
         allowed_orgs = set(settings.gitea_organizations)
         if not allowed_orgs:
-            log.warning("gitea_no_org_filter", extra={"message": "GITEA_ORGANIZATIONS not set — fetching all accessible repos"})
+            log.warning("gitea_no_org_filter", extra={"detail": "GITEA_ORGANIZATIONS not set — fetching all accessible repos"})
 
         repos: list[RepoData] = []
         skipped = 0
