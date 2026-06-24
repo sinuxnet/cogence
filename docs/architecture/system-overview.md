@@ -6,6 +6,8 @@ Cogence is an Engineering Intelligence Platform that transforms engineering acti
 
 **Architecture Philosophy:** Simple, maintainable, and focused on delivering business value.
 
+**Note:** This document includes basic Mermaid diagrams. For comprehensive C4 model diagrams (Context, Container, Component, Code), see the planned architecture diagrams in the `docs/architecture/diagrams/` directory (to be added in MVP-v2+).
+
 ---
 
 ## System Context
