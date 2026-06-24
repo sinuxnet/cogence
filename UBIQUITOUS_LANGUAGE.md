@@ -23,15 +23,17 @@
 
 | Term | Definition | Aliases to avoid |
 | ---- | ---------- | ---------------- |
-| **Executive Summary** | A 2–4 sentence overview of the day's engineering activity | TL;DR, headline, abstract |
-| **Repository Summary** | A brief business-language description of work in one repository | Project summary, repo blurb |
-| **Contributor Summary** | A neutral description of one contributor's work that day | Developer summary, performance note |
-| **Management Notes** | Observations and recommendations for leadership | Alerts, warnings, flags |
+| **Contribution** | A goal-grouped cluster of commits by one Contributor within one Repository, surfaced as a single bullet in the delivered message. One Contributor may have multiple Contributions in the same Repository if their commits addressed distinct goals. | Commit, summary, task |
+| **Report Footer** | A single closing line appended to every delivered message, always in English, stating total active repositories, contributions detected, and commit count. | Summary, statistics block |
 | **Calendar Day** | One full day in `Asia/Tehran` (00:00–23:59) that a report covers | Last 24 hours, rolling window |
 | **Report Date** | The calendar day a Daily Report summarizes | Timestamp, generation date |
 | **Observability Gap** | A neutral note when a commit message lacks enough detail for a precise summary | Bad committer, poor hygiene, non-compliant |
 | **Report Locale** | The configured language for generated report text (e.g. `fa`, `en`) | Auto-detected language, mixed locale |
 | **Report Depth** | How much source material the LLM reads: `brief`, `standard`, or `deep` | Report size, detail level, verbosity |
+| ~~**Executive Summary**~~ | _(Retired v0.2.0)_ Replaced by the General Report opener, then removed in v0.3.0. | — |
+| ~~**Repository Summary**~~ | _(Retired v0.3.0)_ One-sentence per-repo AI description. Replaced by `contributions[]` bullets. | — |
+| ~~**Contributor Summary**~~ | _(Retired v0.3.0)_ Per-contributor cross-repo description. Attribution now on each Contribution bullet. | — |
+| ~~**Management Notes**~~ | _(Retired v0.2.0)_ Observations section removed; Neutral Tone enforced throughout. | — |
 
 ## Generation inputs
 

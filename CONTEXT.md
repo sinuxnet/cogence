@@ -29,12 +29,16 @@ How much source material the LLM reads when generating a report (`brief`, `stand
 _Avoid_: Report type, report mode
 
 **Standard Report**:
-The default Report Depth for MVP v2: General Report, Organizations (with per-repository summaries), and Contributors. Uses commit metadata plus truncated unified diffs; diffs are fetched at generate time and discarded after generation.
+The daily report format from v0.3.0: per-Repository Contribution bullets grouped under each Organization, followed by a Report Footer. No separate Contributors section or executive summary. Uses commit metadata plus truncated unified diffs; diffs are fetched at generate time and discarded after generation.
 _Avoid_: Full report, normal report, management notes
 
 **Contributor**:
-A person who authors commits, shown as recorded in Git metadata. Daily Reports name contributors and describe what they worked on so managers can route follow-up work and customer questions — not to rank or score people.
+A person who authors commits, shown as recorded in Git metadata. Cogence attributes work to Contributors at the Contribution level — not to rank or score people, but so managers can route follow-up questions. Contributors do not have their own section in the report; their name appears on each Contribution bullet within the relevant Repository.
 _Avoid_: Developer ranking, engineer score, productivity comparison
+
+**Contribution**:
+A goal-grouped cluster of commits by one Contributor within one Repository, surfaced as a single bullet in the delivered message. The LLM determines goal boundaries — if a Contributor's commits addressed two distinct goals, they produce two Contributions. The unit of attribution in a Daily Report.
+_Avoid_: Commit (too granular), summary (too vague), task
 
 **Delivery**:
 How a manager receives a report. MVP v1 delivery is external (cron + bash posting to Rocket.Chat); Cogence exposes the report via API only. Delivery failures are separate from report generation — a stored report can be re-delivered without re-generating.
@@ -52,9 +56,9 @@ _Avoid_: Project, team, tenant
 Manager-facing label for a single Git commit when surfaced in report text or delivery messages. Counts and summaries use "update(s)"; the underlying record remains a Commit in code and storage.
 _Avoid_: Commit (in user-facing text), change, modification
 
-**General Report**:
-The opening section of a Daily Report: which Organizations had activity, how many Contributors were detected, and total update count. Replaces the MVP v1 executive summary as the report opener.
-_Avoid_: Executive summary (retired field name), management notes
+**Report Footer**:
+A single closing line appended to every delivered message, always in English regardless of Report Locale, stating total active repositories, contributions detected, and commit count. Example: `3 active repos · 5 contributions detected · 12 commits`. Replaces the General Report opening section (retired in v0.3.0).
+_Avoid_: Summary, statistics block, analytics row
 
 **Neutral Tone**:
 Report language that states what happened without endorsing, blaming, or predicting outcomes. Enforced by tuned prompts plus post-generation checks for forbidden phrases; failed sections fall back to a factual template.
