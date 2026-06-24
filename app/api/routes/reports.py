@@ -29,14 +29,17 @@ def _parse_date(date: str) -> None:
 @router.post("/{date}/generate")
 async def generate_report(
     date: str,
+    force: bool = False,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     _parse_date(date)
 
-    # Idempotency: same date always returns the same stored report without re-generating
     existing = await session.scalar(select(Report).where(Report.report_date == date))
     if existing:
-        return json.loads(existing.content)
+        if not force:
+            return json.loads(existing.content)
+        await session.delete(existing)
+        await session.commit()
 
     async with GiteaClient(settings.gitea_url, settings.gitea_token) as client:
         await client.validate_connection()
