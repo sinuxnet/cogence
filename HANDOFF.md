@@ -16,8 +16,10 @@ This codebase contains the complete MVP-v1 pipeline (6 slices) plus all MVP-v2 r
 | Diff truncation | ~10 lines of unified diff per file; discarded after use (ADR-012) |
 | Gitea HTTP client | `httpx` (async) |
 | DB | User-provided `DATABASE_URL`; docker-compose runs Postgres 16 |
-| LLM calls per report | 2 calls (per-repo, per-contributor) — executive summary and management notes removed in MVP-v2 |
-| App version | `2.0.0` |
+| LLM calls per report | 1 call per repository (structured JSON contributions); per-contributor call removed in v0.3.0 |
+| LLM output format | OpenAI JSON mode (`response_format=json_object`) returning `contributions[]` per repo |
+| Jalali calendar | `jdatetime` library; active when `REPORT_LOCALE=fa` |
+| App version | `3.0.0` |
 
 ---
 
@@ -82,28 +84,32 @@ docker-compose.yml         # db (Postgres 16) + api; DATABASE_URL auto-overridde
 
 ---
 
-## Report JSON structure (v2)
+## Report JSON structure (v3)
+
+`contributors[]` and `general{}` removed. `repositories[].summary` replaced by `repositories[].contributions[]`.
 
 ```json
 {
   "report_date": "2026-06-24",
   "report_type": "daily",
-  "locale": "en",
+  "locale": "fa",
   "timezone": "Asia/Tehran",
-  "general": {
-    "organizations_count": 2,
-    "contributor_count": 3,
-    "total_updates": 25
-  },
   "projects": [
     {
       "organization": "acme",
       "repositories": [
-        {"name": "backend", "update_count": 10, "summary": "..."}
+        {
+          "name": "backend",
+          "update_count": 10,
+          "contributions": [
+            {"contributor": "Abbas", "description": "fixed token expiry check in login form"},
+            {"contributor": "Abbas", "description": "added invoice list endpoint to billing module"},
+            {"contributor": "Soheil", "description": "increased dashboard refresh interval from 30 to 45 minutes"}
+          ]
+        }
       ]
     }
   ],
-  "contributors": [{"name": "Abbas", "summary": "..."}],
   "metadata": {
     "generated_at": "...",
     "total_updates": 25,
@@ -118,6 +124,23 @@ docker-compose.yml         # db (Postgres 16) + api; DATABASE_URL auto-overridde
   }
 }
 ```
+
+### Rocket.Chat message format (fa locale)
+
+```
+گزارش روز 4 تیر 1404
+
+## acme
+
+### backend
+- **Abbas**: fixed token expiry check in login form
+- **Abbas**: added invoice list endpoint to billing module
+- **Soheil**: increased dashboard refresh interval from 30 to 45 minutes
+
+3 active repos · 5 contributions detected · 12 commits
+```
+
+First line is always Persian when `REPORT_LOCALE=fa` to force RTL rendering (ADR-014). Report Footer is always English regardless of locale.
 
 ---
 
@@ -176,15 +199,23 @@ python -m app.collector 2026-06-24  # collect only
 | 5 — Structured Logging | done | `app/core/log_setup.py`; JSON formatter; wired via FastAPI lifespan; key events in all services |
 | 6 — API Versioning | done | `APP_VERSION = "2.0.0"`; `GET /api/version` endpoint |
 
+### v0.3.0
+
+| Slice | Status | Key changes |
+|-------|--------|-------------|
+| 1 — Per-goal attribution | planned | `contributions[]` replaces `summary` + `contributors[]`; LLM JSON mode (ADR-013, ADR-015) |
+| 2 — RTL + Jalali locale | planned | Persian first line; `jdatetime`; English footer always (ADR-014) |
+| 3 — Rocket.Chat markdown | planned | h1/h2/h3 headings in `deliver.sh`; drop Contributors block |
+| 4 — LLM specificity | planned | Component-naming rule added to system prompt |
+| 5 — Release | planned | `v0.3.0`, `jdatetime` in requirements, updated ADRs |
+
 ---
 
-## What is next (MVP-v3)
+## What is next (MVP-v3+)
 
-See `docs/product/mvp/MVP-v3.md`. Top candidates:
+See `docs/product/mvp/MVP-v3.md`. Planned: enhanced commit intelligence, optional Jira context enrichment, cross-repository relevancy detection (deferred from v0.3.0 grilling session 2026-06-24).
 
-- Collector logging (`app/collector.py` still uses `print`)
-- Unit tests: prompt validation (no forbidden phrases), report structure, org filtering, error handling
-- Documentation: `docs/api/versioning.md`, `docs/engineering/logging.md`, updated `docs/examples/sample-report.json`
-- `REPORT_LOCALE=fa` testing with a real manager
+Near-term candidates not yet scheduled:
 - Contributor identity merging (multiple emails → one person)
-- Delivery channel built into the API
+- Unit tests: prompt validation, report structure, org filtering
+- Collector logging (`app/collector.py` still uses `print`)
