@@ -8,6 +8,10 @@ Accepted
 
 2026-06-16
 
+## Amendment — v0.3.0 (2026-06-24)
+
+The output format of AI interpretation changed. Previously the LLM returned a free-text sentence per Repository and per Contributor. From v0.3.0, the LLM returns structured JSON (see ADR-015): a list of `{contributor, description}` Contribution objects per Repository. The principle — AI interprets facts, never generates them — is unchanged. Contributor names and commit messages still come from Git; the LLM only clusters them into goals and rewrites them in business language.
+
 ## Context
 
 Cogence uses AI to transform engineering activity into business-readable intelligence. AI can be used in two fundamentally different ways:

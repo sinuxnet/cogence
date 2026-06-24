@@ -8,6 +8,10 @@ Accepted
 
 2026-06-16
 
+## Amendment — v0.3.0 (2026-06-24)
+
+The Contributors section (brief per-person summary) was removed from the report format. Per-goal attribution is now embedded directly on each bullet within the relevant Repository (`**Abbas**: fixed X in Y`). A separate Contributors section was redundant and forced the LLM to compress cross-repo work into a single sentence — always too vague to be actionable. The Report Footer retains contributor counts for at-a-glance statistics.
+
 ## Context
 
 Engineering intelligence products typically evolve in one of two directions:
