@@ -4,7 +4,7 @@
 
 This document specifies the AI prompts and rules for generating business-readable daily reports from engineering commit data. The prompts are designed to transform technical Git commits into executive-friendly summaries.
 
-**Goal:** Generate clear, actionable, business-readable reports that non-technical managers can understand in under 60 seconds.
+**Goal:** Generate clear, factual, business-readable reports that non-technical managers can understand in under 60 seconds.
 
 ---
 
@@ -16,7 +16,8 @@ Based on [ADR-002](../adr/ADR-002-business-language-reporting.md), [ADR-004](../
 2. **No Individual Scoring** - No developer rankings or productivity metrics
 3. **Factual Basis** - Only use provided commit data
 4. **Concise** - Readable in under 60 seconds
-5. **Actionable** - Provide insights for leadership
+5. **Purely Factual** - No optimistic assumptions or endorsements
+6. **Neutral Tone** - Assistant to managers, not advocate for developers
 
 ---
 
@@ -73,6 +74,145 @@ Based on [ADR-002](../adr/ADR-002-business-language-reporting.md), [ADR-004](../
   ]
 }
 ```
+
+---
+
+## Report Structure (MVP-v2)
+
+### New Hierarchical Format
+
+Starting with MVP-v2, reports use a hierarchical organization → repository structure:
+
+```
+## General Report
+- X organizations/projects updated
+- Y contributors detected
+- Z total updates
+
+## Projects
+### Organization/Project 1
+#### Repository A (10 updates)
+- Factual description of changes
+#### Repository B (15 updates)
+- Factual description of changes
+
+### Organization/Project 2
+#### Repository C (5 updates)
+- Factual description of changes
+
+## Contributors
+### Abbas
+- Worked on Project X
+- Refactored authentication
+
+### Setareh
+- Worked on frontend
+- Added validation for user phone number
+```
+
+### Key Changes from MVP-v1
+
+1. **Organization Grouping** - Repositories grouped by organization/project
+2. **"Updates" not "Commits"** - User-facing text uses "updates" instead of "commits"
+3. **Contributor Count Upfront** - Show number of contributors in general report
+4. **Update Counts** - Show number of updates per repository
+5. **No Management Notes** - Remove "management_notes" section (for MVP-v2)
+6. **Factual Descriptions** - Purely descriptive, no quality judgments
+
+### General Report Section
+
+**Purpose:** High-level overview of activity
+
+**Content:**
+- Number of organizations/projects with activity
+- Total number of contributors
+- Total number of updates
+
+**Example:**
+```
+## General Report
+- 2 organizations updated
+- 5 contributors detected
+- 25 total updates
+```
+
+**Rules:**
+- Use "updates" not "commits"
+- Show counts only, no interpretation
+- No optimistic language
+
+### Projects Section
+
+**Purpose:** Show work by organization and repository
+
+**Structure:**
+```
+## Projects
+### [Organization Name]
+#### [Repository Name] (X updates)
+- [Factual description]
+```
+
+**Rules:**
+- Group repositories by organization
+- Show update count per repository
+- Descriptions are factual, not evaluative
+- No assumptions about quality or impact
+- Use business language, not technical jargon
+
+**Example:**
+```
+## Projects
+### Acme Corp
+#### customer-portal (10 updates)
+- Authentication system changes
+- User interface modifications
+
+#### api-gateway (8 updates)
+- API endpoint updates
+- Error handling changes
+```
+
+### Contributors Section
+
+**Purpose:** Show what each person worked on
+
+**Structure:**
+```
+## Contributors
+### [Contributor Name]
+- Worked on [Project/Area]
+- [Specific work description]
+```
+
+**Rules:**
+- List contributors alphabetically
+- Describe work areas, not evaluate performance
+- No commit counts or productivity metrics
+- No rankings or comparisons
+- Neutral, respectful language
+- Focus on what they worked on, not how well
+
+**Example:**
+```
+## Contributors
+### Abbas
+- Worked on customer portal
+- Refactored authentication system
+
+### Setareh
+- Worked on customer portal frontend
+- Added validation for user phone number
+```
+
+**Bad Examples (Avoid):**
+```
+❌ "Abbas made significant progress on authentication"
+❌ "Setareh was highly productive with 15 commits"
+❌ "Top contributor: Abbas"
+❌ "Great work on the frontend by Setareh"
+```
+
 
 ---
 
@@ -301,9 +441,9 @@ High activity on customer-facing projects indicates strong focus on strategic in
 1. **MUST use business language** - No technical jargon
 2. **MUST be factual** - Only use provided commit data
 3. **MUST be concise** - Keep summaries brief
-4. **MUST be respectful** - Neutral language for contributors
+4. **MUST be neutral** - No endorsements or blame
 5. **MUST avoid scoring** - No rankings or productivity metrics
-6. **MUST be actionable** - Provide useful insights
+6. **MUST be purely descriptive** - State what happened, not quality judgments
 
 ### MUST NOT Rules
 
@@ -314,6 +454,10 @@ High activity on customer-facing projects indicates strong focus on strategic in
 5. **MUST NOT use technical jargon** - Business language only
 6. **MUST NOT analyze code** - Commits only, no code review
 7. **MUST NOT make assumptions** - Stick to facts
+8. **MUST NOT use optimistic language** - No "significant progress", "strong collaboration"
+9. **MUST NOT endorse or blame** - No "great work" or "poor performance"
+10. **MUST NOT predict outcomes** - No "will improve user experience"
+11. **MUST NOT give false hope** - No assumptions about quality or impact
 
 ---
 
@@ -342,17 +486,39 @@ High activity on customer-facing projects indicates strong focus on strategic in
 - Technical stack details
 - Implementation specifics
 - Code quality scores
+- "Significant progress"
+- "Strong collaboration"
+- "Great work" / "Excellent"
+- "Will improve user experience"
+- "High quality"
+- "Impressive"
+- "Outstanding"
+- Any endorsement language
+- Any optimistic assumptions
+
+### Forbidden Phrases (MVP-v2)
+
+❌ **Specifically avoid:**
+- "which will improve user experience and operational efficiency"
+- "significant progress made"
+- "strong collaboration observed"
+- "high activity indicates strong focus"
+- "team is making good progress"
+- "excellent work on..."
+- Any phrase that endorses the team
+- Any phrase that gives managers hope about quality
+- Any phrase that assumes positive outcomes
 
 ### Preferred Terms
 
 ✓ **Use instead:**
-- Business capabilities
-- Customer value
-- Strategic alignment
-- Project focus
-- Team collaboration
-- System improvements
-- Feature delivery
+- "Updates made to..." (not "commits")
+- "Work focused on..."
+- "Changes included..."
+- "Team worked on..."
+- "Updates addressed..."
+- Purely factual descriptions
+- Neutral, descriptive language
 
 ---
 
