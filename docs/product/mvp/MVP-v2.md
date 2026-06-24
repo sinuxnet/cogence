@@ -1,6 +1,6 @@
 # MVP-v2: Fixes and Enhancements
 
-**Status:** Planning  
+**Status:** Done  
 **Target:** Post MVP-v1 Pilot  
 **Focus:** Address MVP-v1 feedback, improve report quality, add essential features
 
@@ -428,5 +428,5 @@ GITEA_INCLUDE_PERSONAL=false
 ---
 
 **Last Updated:** 2026-06-24  
-**Status:** Planning  
-**Next Review:** After MVP-v1 pilot completion
+**Status:** Done  
+**Next Review:** MVP-v3 planning

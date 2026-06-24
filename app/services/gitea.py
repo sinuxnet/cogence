@@ -4,6 +4,11 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from app.core.config import settings
+from app.core.log_setup import get_logger
+
+log = get_logger("gitea")
+
 TEHRAN_TZ = ZoneInfo("Asia/Tehran")
 UTC_TZ = ZoneInfo("UTC")
 
@@ -75,9 +80,14 @@ class GiteaClient:
         return r.json()["login"]
 
     async def list_repos(self) -> list[RepoData]:
-        """Return all repositories accessible to the configured token."""
+        """Return repositories filtered by GITEA_ORGANIZATIONS (if configured)."""
         assert self._client
+        allowed_orgs = set(settings.gitea_organizations)
+        if not allowed_orgs:
+            log.warning("gitea_no_org_filter", extra={"message": "GITEA_ORGANIZATIONS not set — fetching all accessible repos"})
+
         repos: list[RepoData] = []
+        skipped = 0
         page = 1
         while True:
             r = await self._client.get(
@@ -86,6 +96,20 @@ class GiteaClient:
             r.raise_for_status()
             batch = r.json().get("data", [])
             for item in batch:
+                owner = item["full_name"].split("/")[0]
+                owner_type = item.get("owner", {}).get("type", "User")
+                is_personal = owner_type == "User"
+
+                if allowed_orgs:
+                    if owner in allowed_orgs:
+                        pass  # include
+                    elif settings.gitea_include_personal and is_personal:
+                        pass  # include personal when explicitly allowed
+                    else:
+                        log.debug("gitea_repo_filtered", extra={"repo": item["full_name"], "owner": owner})
+                        skipped += 1
+                        continue
+
                 repos.append(
                     RepoData(
                         gitea_id=item["id"],
@@ -98,6 +122,8 @@ class GiteaClient:
             if len(batch) < 50:
                 break
             page += 1
+
+        log.info("gitea_repos_listed", extra={"included": len(repos), "filtered_out": skipped})
         return repos
 
     async def fetch_commits_for_day(
@@ -163,6 +189,7 @@ class GiteaClient:
                 break
             page += 1
 
+        log.info("gitea_commits_fetched", extra={"repo": repo_full_name, "date": date_str, "count": len(commits)})
         return commits
 
     async def fetch_commit_diff(

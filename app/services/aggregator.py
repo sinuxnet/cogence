@@ -9,7 +9,14 @@ class RepositoryData:
     name: str
     full_name: str
     description: str
+    organization: str
     commits: list[Commit] = field(default_factory=list)
+
+
+@dataclass
+class OrganizationData:
+    name: str
+    repositories: list[RepositoryData] = field(default_factory=list)
 
 
 @dataclass
@@ -28,6 +35,7 @@ class ContributorData:
 class AggregatedDay:
     date_str: str
     repositories: list[RepositoryData]
+    organizations: list[OrganizationData]
     contributors: list[ContributorData]
     total_commits: int
     non_atomic_commits: int
@@ -44,10 +52,12 @@ def aggregate_commits(date_str: str, commits: list[Commit]) -> AggregatedDay:
     for commit in commits:
         repo = commit.repository
         if repo.name not in repos:
+            org = repo.full_name.split("/")[0] if "/" in repo.full_name else repo.name
             repos[repo.name] = RepositoryData(
                 name=repo.name,
                 full_name=repo.full_name,
                 description=repo.description,
+                organization=org,
             )
         repos[repo.name].commits.append(commit)
 
@@ -65,9 +75,18 @@ def aggregate_commits(date_str: str, commits: list[Commit]) -> AggregatedDay:
         if commit.files_changed is not None and commit.files_changed > threshold:
             non_atomic += 1
 
+    # Group repositories by organization (owner prefix of full_name)
+    org_map: dict[str, OrganizationData] = {}
+    for repo_data in repos.values():
+        org_name = repo_data.organization
+        if org_name not in org_map:
+            org_map[org_name] = OrganizationData(name=org_name)
+        org_map[org_name].repositories.append(repo_data)
+
     return AggregatedDay(
         date_str=date_str,
         repositories=list(repos.values()),
+        organizations=list(org_map.values()),
         contributors=list(contributors.values()),
         total_commits=len(commits),
         non_atomic_commits=non_atomic,

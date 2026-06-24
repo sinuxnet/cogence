@@ -14,65 +14,95 @@ set -euo pipefail
 : "${COGENCE_API_KEY:?COGENCE_API_KEY must be set}"
 : "${ROCKETCHAT_WEBHOOK:?ROCKETCHAT_WEBHOOK must be set}"
 
+TS=$(TZ=Asia/Tehran date '+%Y-%m-%dT%H:%M:%S%z')
+
 # Yesterday in Asia/Tehran
 DATE=$(TZ=Asia/Tehran date -d "yesterday" +%Y-%m-%d 2>/dev/null \
     || TZ=Asia/Tehran date -v-1d +%Y-%m-%d)
 
-echo "Generating report for ${DATE}..."
+echo "[${TS}] Generating report for ${DATE}..."
 
-REPORT=$(curl -sf -X POST \
+# Capture body and HTTP status code separately to give specific error messages
+TMP=$(mktemp)
+HTTP_CODE=$(curl -s -o "$TMP" -w "%{http_code}" -X POST \
     -H "Authorization: Bearer ${COGENCE_API_KEY}" \
     -H "Content-Type: application/json" \
-    "${COGENCE_API_URL}/api/v1/reports/daily/${DATE}/generate")
+    "${COGENCE_API_URL}/api/v1/reports/daily/${DATE}/generate" || echo "000")
+REPORT=$(cat "$TMP")
+rm -f "$TMP"
+
+case "$HTTP_CODE" in
+  200) ;;
+  000) echo "[${TS}] ERROR: Network failure — could not reach ${COGENCE_API_URL}. Check URL and connectivity." >&2; exit 1 ;;
+  401) echo "[${TS}] ERROR: [401] Authentication failed — check COGENCE_API_KEY." >&2; exit 1 ;;
+  404) echo "[${TS}] ERROR: [404] No report found for ${DATE} — run the collector first or check the date." >&2; exit 1 ;;
+  500) echo "[${TS}] ERROR: [500] Server error — check Cogence server logs." >&2; exit 1 ;;
+  *)   echo "[${TS}] ERROR: [${HTTP_CODE}] Unexpected response from ${COGENCE_API_URL}." >&2; exit 1 ;;
+esac
 
 if [ -z "$REPORT" ]; then
-    echo "ERROR: empty response from generate endpoint" >&2
+    echo "[${TS}] ERROR: Empty response from generate endpoint." >&2
     exit 1
 fi
 
-# Build Rocket.Chat message from report fields
-EXEC_SUMMARY=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('executive_summary',''))")
-MGMT_NOTES=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('management_notes',''))")
-TOTAL=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['metadata']['total_commits'])")
-REPOS=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['metadata']['total_repositories'])")
+# Extract fields from new v2 structure (general / projects / contributors)
+TOTAL=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['total_updates'])")
+ORGS=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['organizations_count'])")
+CONTRIBS=$(echo "$REPORT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['general']['contributor_count'])")
 
-REPO_LINES=$(echo "$REPORT" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-for r in d.get('repositories',[]):
-    print(f\"  • {r['name']}: {r['summary']}\")
+PROJECT_LINES=$(echo "$REPORT" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+for org in d.get('projects', []):
+    print(f\"*{org['organization']}:*\")
+    for r in org.get('repositories', []):
+        n = r['update_count']
+        label = 'update' if n == 1 else 'updates'
+        print(f\"  • {r['name']} ({n} {label}): {r['summary']}\")
 ")
 
 CONTRIB_LINES=$(echo "$REPORT" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-for c in d.get('contributors',[]):
+import json, sys
+d = json.load(sys.stdin)
+for c in d.get('contributors', []):
     print(f\"  • {c['name']}: {c['summary']}\")
 ")
 
 MESSAGE=$(cat <<EOF
 *Daily Engineering Report — ${DATE}*
 
-${EXEC_SUMMARY}
+*Activity Summary:*
+  • ${ORGS} organization(s) active
+  • ${CONTRIBS} contributor(s)
+  • ${TOTAL} total update(s)
 
-*Active Repositories (${REPOS}):*
-${REPO_LINES:-  No active repositories.}
+*Projects:*
+${PROJECT_LINES:-  No active repositories.}
 
 *Contributors:*
 ${CONTRIB_LINES:-  No activity recorded.}
 
-*Management Notes:*
-${MGMT_NOTES}
-
-_${TOTAL} commit(s) collected • Cogence_
+_${TOTAL} update(s) collected • Cogence_
 EOF
 )
 
 PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'text': sys.argv[1]}))" "$MESSAGE")
 
-curl -sf -X POST \
+echo "[${TS}] Sending to Rocket.Chat..."
+
+TMP=$(mktemp)
+RC_CODE=$(curl -s -o "$TMP" -w "%{http_code}" -X POST \
     -H "Content-Type: application/json" \
     -d "$PAYLOAD" \
-    "${ROCKETCHAT_WEBHOOK}"
+    "${ROCKETCHAT_WEBHOOK}" || echo "000")
+RC_BODY=$(cat "$TMP")
+rm -f "$TMP"
 
-echo "Report delivered for ${DATE}."
+case "$RC_CODE" in
+  200|204) ;;
+  000) echo "[${TS}] ERROR: Network failure — could not reach Rocket.Chat webhook." >&2; exit 1 ;;
+  401) echo "[${TS}] ERROR: [401] Rocket.Chat webhook rejected — check ROCKETCHAT_WEBHOOK URL." >&2; exit 1 ;;
+  *)   echo "[${TS}] ERROR: [${RC_CODE}] Rocket.Chat webhook failed. Response: ${RC_BODY}" >&2; exit 1 ;;
+esac
+
+echo "[${TS}] Report delivered for ${DATE}."
