@@ -123,8 +123,8 @@ class GiteaClient:
                     "page": page,
                 },
             )
-            if r.status_code == 404:
-                break  # empty or inaccessible repo
+            if r.status_code in (404, 409):
+                break  # empty/unborn repo or inaccessible
             r.raise_for_status()
 
             batch = r.json()
